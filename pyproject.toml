@@ -37,3 +37,7 @@ fail_under = 85
 testpaths = ["tests"]
 addopts = "-q"
 markers = ["slow: integration/slow tests, excluded from the fast local loop"]
+# Prepend the in-tree src/ so pytest always imports this checkout's package,
+# not a stale editable install pointing elsewhere (e.g. a sibling worktree
+# under my-coder). Keeps the suite hermetic regardless of install state.
+pythonpath = ["src"]
