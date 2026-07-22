@@ -79,7 +79,13 @@ def test_dry_run_prints_dag_and_files_nothing(
     assert "task(s), build order" in out
 
 
-def test_noop_engine_degrades_and_still_files_the_placeholder_task(tmp_path: Path) -> None:
+def test_noop_engine_degrades_and_still_files_the_placeholder_task(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    # Attended is the human's explicit opt-in for the ASK-gated issue-create
+    # (see emit.py); force that regardless of the environment this suite
+    # itself happens to run in (CI always sets GITHUB_ACTIONS=true).
+    monkeypatch.delenv("GITHUB_ACTIONS", raising=False)
     gh = gh_with(issue_obj(42, "Build a raytracer"))
     rc = main(
         ["plan", "--objective-issue", "42", "--repo", "o/r", "--ledger", str(tmp_path / "l.jsonl")],
@@ -95,6 +101,7 @@ def test_noop_engine_degrades_and_still_files_the_placeholder_task(tmp_path: Pat
 def test_full_run_wires_objective_through_context_breakdown_and_emit(
     tmp_path: Path, monkeypatch: pytest.MonkeyPatch
 ) -> None:
+    monkeypatch.delenv("GITHUB_ACTIONS", raising=False)
     monkeypatch.setattr(
         cli, "build_engine", lambda name, model=None: ScriptedEngine(reply=well_formed_reply())
     )
