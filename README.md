@@ -52,9 +52,10 @@ pip install -e ../my-things-core -e ".[dev]"
 pytest
 ```
 
-The behaviour above lands issue by issue — see the `my-architect`-labeled
-backlog. This scaffold ships the harness loop with the judgment seams still
-open; `myarchitect run --engine noop` is a green, zero-token dry run.
+`--engine noop` (the default) costs zero tokens: with no usable Engine reply,
+the DAG degrades to a single placeholder task echoing the objective verbatim
+— still validated, ordered, and filed like any other run unless `--dry-run`
+is also passed.
 
 ## License
 
