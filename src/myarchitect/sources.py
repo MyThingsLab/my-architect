@@ -1,11 +1,41 @@
 from __future__ import annotations
 
+import json
 import re
 
-from mythings.github import GitHub, Runner
+from mythings.github import GitHub, Issue, Runner
 from mythings.ledger import Ledger, LedgerEntry
 
 RESEARCH_KIND = "research"
+
+
+def read_objective(runner: Runner, repo: str, number: int) -> Issue:
+    """Fetch a single issue by number -- the objective my-architect decomposes.
+
+    `GitHub.list_issues` only lists issues matching a filter, with no
+    guarantee a specific number is within its `limit`, so this calls `gh
+    issue view` directly rather than listing and searching.
+    """
+    raw = json.loads(
+        runner(
+            [
+                "issue",
+                "view",
+                str(number),
+                "--repo",
+                repo,
+                "--json",
+                "number,title,body,url,labels",
+            ]
+        )
+    )
+    return Issue(
+        number=raw["number"],
+        title=raw["title"],
+        body=raw.get("body", "") or "",
+        url=raw["url"],
+        labels=[lbl["name"] for lbl in raw.get("labels", [])],
+    )
 
 
 def read_open_issues(runner: Runner, repo: str) -> list[str]:

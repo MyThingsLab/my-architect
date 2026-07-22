@@ -5,7 +5,7 @@ build-backend = "hatchling.build"
 [project]
 name = "my-architect"
 version = "0.0.1"
-description = "Scaffold for a MyThingsLab My[X] tool — copy, then replace `template`."
+description = "The fleet's autonomous work-breakdown: decomposes one objective issue into an ordered, dependency-tagged backlog of task issues."
 authors = [{ name = "Lorenzo Liuzzo", email = "lorenzoliuzzo@outlook.com" }]
 readme = "README.md"
 license = { text = "MIT" }
