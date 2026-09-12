@@ -67,3 +67,7 @@ def test_read_research_ignores_non_research_kinds(tmp_path: Path) -> None:
         ledger_entry("myplanner", "plan", "success", "raytracer plan", topic="raytracer")
     )
     assert read_research(ledger, "Build a raytracer") == []
+
+
+def test_noop_placeholder() -> None:
+    assert True
