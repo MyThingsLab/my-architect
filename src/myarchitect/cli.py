@@ -15,6 +15,12 @@ _ENGINE_NAMES = ("noop", "claude-cli")
 
 
 def render_dag(tasks: list[Task], order: list[int]) -> str:
+    """Render `tasks` as a human-readable build plan in `order`.
+
+    Shown for both `--dry-run` (the only output) and a real run (printed
+    before anything is filed), so a human reading either sees the same
+    dependency shape the DAG was validated and ordered against.
+    """
     lines = [f"{len(tasks)} task(s), build order:"]
     for pos, i in enumerate(order, 1):
         deps = ", ".join(str(d) for d in tasks[i].depends_on) or "none"
@@ -23,6 +29,16 @@ def render_dag(tasks: list[Task], order: list[int]) -> str:
 
 
 def _run_plan(args: argparse.Namespace, runner: Runner) -> int:
+    """Run the `plan` subcommand: objective issue -> context -> breakdown -> emit.
+
+    Wires the pipeline in order -- `sources.read_objective`, `context.assemble`
+    (#2), `synthesize_breakdown` (#3), `dag.topological_order` (#4, which
+    validates before it orders), then `emit.emit` (#5) unless `--dry-run` --
+    and prints a one-line-per-step summary a human can read without opening
+    the ledger. Returns non-zero on an invalid DAG or when `emit` files
+    nothing (e.g. an unattended `Policy` denial), so the fleet loop can tell a
+    failed run from a successful one.
+    """
     ledger = Ledger(args.ledger)
     objective = sources.read_objective(runner, args.repo, args.objective_issue)
     ctx = context.assemble(objective, runner=runner, repo=args.repo, ledger=ledger)
@@ -60,6 +76,13 @@ def _run_plan(args: argparse.Namespace, runner: Runner) -> int:
 
 
 def main(argv: list[str] | None = None, *, runner: Runner | None = None) -> int:
+    """Entry point for the `myarchitect` console script (`[project.scripts]`).
+
+    `plan` is the only subcommand -- my-architect does exactly one thing, so
+    there's nothing else to dispatch to. `runner` defaults to the real `gh`
+    wrapper (`mythings.github._gh`) and is overridden only by tests, which
+    pass a `FakeGh`.
+    """
     parser = argparse.ArgumentParser(
         prog="myarchitect",
         description="Decompose one objective issue into an ordered, dependency-tagged "
