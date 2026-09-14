@@ -4,12 +4,11 @@ import json
 from pathlib import Path
 
 import pytest
-from mythings.engine import ClaudeCLIEngine, NoopEngine
 from mythings.ledger import Ledger
 from mythings.testing import FakeGh, ScriptedEngine
 
 from myarchitect import cli, emit
-from myarchitect.cli import build_engine, main
+from myarchitect.cli import main
 
 
 def issue_obj(number: int, title: str, body: str = "details") -> dict:
@@ -48,11 +47,6 @@ def well_formed_reply() -> str:
             ]
         }
     )
-
-
-def test_build_engine_selects_backend() -> None:
-    assert isinstance(build_engine("noop"), NoopEngine)
-    assert isinstance(build_engine("claude-cli"), ClaudeCLIEngine)
 
 
 def test_dry_run_prints_dag_and_files_nothing(
@@ -103,7 +97,7 @@ def test_full_run_wires_objective_through_context_breakdown_and_emit(
 ) -> None:
     monkeypatch.delenv("GITHUB_ACTIONS", raising=False)
     monkeypatch.setattr(
-        cli, "build_engine", lambda name, model=None: ScriptedEngine(reply=well_formed_reply())
+        cli, "build_engine_from_args", lambda args: ScriptedEngine(reply=well_formed_reply())
     )
     gh = gh_with(issue_obj(42, "Build a raytracer"), open_issues=[])
 
@@ -137,7 +131,7 @@ def test_invalid_dag_from_engine_exits_nonzero(
         }
     )
     monkeypatch.setattr(
-        cli, "build_engine", lambda name, model=None: ScriptedEngine(reply=cyclic_reply)
+        cli, "build_engine_from_args", lambda args: ScriptedEngine(reply=cyclic_reply)
     )
     gh = gh_with(issue_obj(1, "Objective"))
 
