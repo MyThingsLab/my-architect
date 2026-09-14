@@ -3,7 +3,7 @@ from __future__ import annotations
 import argparse
 from pathlib import Path
 
-from mythings.engine import ClaudeCLIEngine, Engine, NoopEngine
+from mythings.engine import build_engine_from_args
 from mythings.github import Runner, _gh
 from mythings.ledger import Ledger
 
@@ -12,12 +12,6 @@ from myarchitect.breakdown import Task, synthesize_breakdown
 from myarchitect.emit import BACKLOG_LABEL, DefaultPolicy
 
 _ENGINE_NAMES = ("noop", "claude-cli")
-
-
-def build_engine(name: str, *, model: str | None = None) -> Engine:
-    if name == "claude-cli":
-        return ClaudeCLIEngine(model=model)
-    return NoopEngine()
 
 
 def render_dag(tasks: list[Task], order: list[int]) -> str:
@@ -33,7 +27,7 @@ def _run_plan(args: argparse.Namespace, runner: Runner) -> int:
     objective = sources.read_objective(runner, args.repo, args.objective_issue)
     ctx = context.assemble(objective, runner=runner, repo=args.repo, ledger=ledger)
 
-    engine = build_engine(args.engine, model=args.engine_model)
+    engine = build_engine_from_args(args)
     breakdown = synthesize_breakdown(engine, ctx)
 
     try:
